@@ -74,8 +74,12 @@ The frontend API client (`frontend/src/lib/api.js:4`) reads the backend URL from
 const RAW_BASE = import.meta.env.VITE_API_URL || '/api'
 ```
 
-- In development, Vite's proxy (`vite.config.js`) forwards `/api` to `http://localhost:3001`.
-- In production on Vercel, set `VITE_API_URL=https://your-backend.onrender.com` so the SPA calls the Render API directly (same-origin in dev, cross-origin in prod).
+All API paths in the client are relative (e.g., `/auth/login`, `/products`). The backend mounts routes under `/api` (e.g., `/api/auth/login`).
+
+- **In development**: `VITE_API_URL` is unset, so `API_BASE='/api'`. Vite's proxy forwards `/api/*` to `http://localhost:3001/api/*`. Works seamlessly.
+- **In production**: Set `VITE_API_URL=https://your-backend.onrender.com/api` (note the `/api` suffix). Without it, requests go to `https://your-backend.onrender.com/auth/login` (missing `/api`) and the backend returns 404.
+
+**If you get 404 errors on the deployed backend, verify `VITE_API_URL` includes the `/api` suffix.**
 
 **No hardcoded localhost URL in the frontend bundle.** This was verified by grepping the dist output.
 
@@ -180,7 +184,7 @@ This is appropriate for Render's health-check path. The service is considered "n
 
 | Variable | Secret? | Required | Source | Description |
 |---|---|---|---|---|
-| `VITE_API_URL` | No | Yes (Prod) | Vercel dashboard | Backend API base URL (e.g. `https://grovio-api.onrender.com`). Defaults to `/api` for local dev proxy. |
+| `VITE_API_URL` | No | Yes (Prod) | Vercel dashboard | Backend API base URL with `/api` prefix (e.g. `https://grovio-api.onrender.com/api`). Must include `/api` — defaults to `/api` for local dev proxy. |
 
 Vite exposes only `VITE_*` prefixed variables to the client bundle. No backend secrets are exposed through the frontend.
 
@@ -403,7 +407,7 @@ git push origin main
    - **Install Command**: `npm ci`
 4. Add environment variable:
    - **Name**: `VITE_API_URL`
-   - **Value**: `https://your-backend-name.onrender.com` (the Render URL from Step 3)
+    - **Value**: `https://your-backend-name.onrender.com/api` (include `/api` suffix — the backend mounts all routes under `/api`)
    - **Environment**: Production (and Preview if you want branch previews to work)
 5. Click **Deploy**.
 6. Once deployed, your app will be live at `https://your-grovio.vercel.app`.
@@ -434,6 +438,7 @@ git push origin main
 | Problem | Diagnosis | Fix |
 |---|---|---|
 | CORS error in browser console | Backend isn't allowing the Vercel origin | Check `CLIENT_ORIGIN` in Render env — must exactly match `https://your-grovio.vercel.app` |
+| 404 on /auth/* or /products in browser console | `VITE_API_URL` missing `/api` suffix | Set `VITE_API_URL=https://your-backend.onrender.com/api` in Vercel (include `/api`) |
 | Cookies not sent (infinite redirect loop) | SameSite or Secure not configured | Ensure `COOKIE_SAMESITE=none` and `COOKIE_SECURE=true` in Render env |
 | 503 from `/api/health` | Backend can't connect to MongoDB | Check `MONGODB_URI` — ensure the password and database name are correct; check Atlas IP whitelist |
 | Refresh not working after cold start | First request times out before DB connects | Wait 10-15 seconds for Render to fully start, then retry |
