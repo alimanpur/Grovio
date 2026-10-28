@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { authApi, getAccessToken, setAccessToken, refreshAccessToken } from '@/lib/api.js'
+import { authApi, getAccessToken, setAccessToken, setCsrfToken } from '@/lib/api.js'
 
 const AuthContext = createContext(null)
 
@@ -132,6 +132,7 @@ export function AuthProvider({ children }) {
       /* best-effort: clear client state regardless */
     }
     setAccessToken(null)
+    setCsrfToken(null)
     setUser(null)
     setStatus(STATUS.ANONYMOUS)
   }, [clearTimer])

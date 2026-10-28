@@ -15,6 +15,18 @@ export const setAccessToken = (token) => {
   accessToken = token
 }
 
+/**
+ * CSRF token is also held in memory so that a rotated token from a
+ * refresh/login/register response is immediately available for the next
+ * state-changing request — document.cookie can lag for third-party cookies
+ * (SameSite=None, cross-origin). Updated from any response that includes one.
+ */
+let csrfToken = null
+export const getCsrfToken = () => csrfToken
+export const setCsrfToken = (token) => {
+  csrfToken = token
+}
+
 /** Reads a non-HttpOnly cookie (used for the double-submit CSRF token). */
 const readCookie = (name) => {
   if (typeof document === 'undefined') return ''
@@ -44,10 +56,12 @@ export const refreshAccessToken = () => {
     .refresh()
     .then((r) => {
       setAccessToken(r.data.accessToken)
+      if (r.data.csrfToken) setCsrfToken(r.data.csrfToken)
       return r.data
     })
     .catch((err) => {
       setAccessToken(null)
+      setCsrfToken(null)
       throw err
     })
     .finally(() => {
@@ -71,7 +85,7 @@ export const request = async (path, { method = 'GET', body, auth = true, csrf = 
     if (body !== undefined) h['Content-Type'] = 'application/json'
     if (auth && accessToken) h.Authorization = `Bearer ${accessToken}`
     if (csrf) {
-      const token = readCookie('grovio_csrf')
+      const token = csrfToken || readCookie('grovio_csrf')
       if (token) h['X-CSRF-Token'] = token
     }
     return h
@@ -96,8 +110,14 @@ export const request = async (path, { method = 'GET', body, auth = true, csrf = 
 
   if (res.status === 401 && auth && _retry && !path.startsWith('/auth/')) {
     try {
-      await refreshAccessToken()
-      res = await doFetch(buildHeaders())
+      const data = await refreshAccessToken()
+      // After a refresh the server rotates both the access token and the
+      // CSRF cookie. Use the csrfToken from the response directly rather
+      // than re-reading document.cookie, which may lag for third-party
+      // cookies (cross-origin iframe/fetch Set-Cookie).
+      const headers = buildHeaders()
+      if (csrf && data?.csrfToken) headers['X-CSRF-Token'] = data.csrfToken
+      res = await doFetch(headers)
     } catch {
       // Refresh failed — fall through to normal error handling with the
       // original 401 response so callers can react (e.g. redirect to login).
@@ -118,6 +138,9 @@ export const request = async (path, { method = 'GET', body, auth = true, csrf = 
       errors: json?.errors,
     })
   }
+  // Capture a freshly issued CSRF token from any response that includes one
+  // (register, login, refresh) so subsequent requests use the rotated value.
+  if (json?.data?.csrfToken) setCsrfToken(json.data.csrfToken)
   return json
 }
 
