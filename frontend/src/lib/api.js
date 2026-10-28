@@ -31,32 +31,77 @@ export class ApiError extends Error {
   }
 }
 
+let pendingRefresh = null
+
+/**
+ * Attempts a single silent token refresh, coalescing concurrent callers.
+ * Updates the module-level access token. Returns the refresh response data
+ * (including the new access token and user) on success, or rejects on failure.
+ */
+export const refreshAccessToken = () => {
+  if (pendingRefresh) return pendingRefresh
+  pendingRefresh = authApi
+    .refresh()
+    .then((r) => {
+      setAccessToken(r.data.accessToken)
+      return r.data
+    })
+    .catch((err) => {
+      setAccessToken(null)
+      throw err
+    })
+    .finally(() => {
+      pendingRefresh = null
+    })
+  return pendingRefresh
+}
+
 /**
  * Performs a request against the API. `credentials: 'include'` sends the
  * HttpOnly refresh cookie + CSRF cookie automatically. State-changing requests
  * include the X-CSRF-Token header (double-submit).
+ *
+ * On a 401 for an authenticated, non-auth endpoint, transparently refreshes
+ * the access token and retries once — the short-lived token can expire while
+ * the user is mid-flow (e.g. during onboarding).
  */
-export const request = async (path, { method = 'GET', body, auth = true, csrf = false, signal } = {}) => {
-  const headers = {}
-  if (body !== undefined) headers['Content-Type'] = 'application/json'
-  if (auth && accessToken) headers.Authorization = `Bearer ${accessToken}`
-  if (csrf) {
-    const token = readCookie('grovio_csrf')
-    if (token) headers['X-CSRF-Token'] = token
+export const request = async (path, { method = 'GET', body, auth = true, csrf = false, signal, _retry = true } = {}) => {
+  const buildHeaders = () => {
+    const h = {}
+    if (body !== undefined) h['Content-Type'] = 'application/json'
+    if (auth && accessToken) h.Authorization = `Bearer ${accessToken}`
+    if (csrf) {
+      const token = readCookie('grovio_csrf')
+      if (token) h['X-CSRF-Token'] = token
+    }
+    return h
   }
 
-  let res
-  try {
-    res = await fetch(`${API_BASE}${path}`, {
+  const doFetch = (headers) =>
+    fetch(`${API_BASE}${path}`, {
       method,
       headers,
       credentials: 'include',
       signal,
       body: body !== undefined ? JSON.stringify(body) : undefined,
     })
+
+  let res
+  try {
+    res = await doFetch(buildHeaders())
   } catch (err) {
     if (err?.name === 'AbortError') throw err
     throw new ApiError(0, 'Network error. Check your connection and try again.')
+  }
+
+  if (res.status === 401 && auth && _retry && !path.startsWith('/auth/')) {
+    try {
+      await refreshAccessToken()
+      res = await doFetch(buildHeaders())
+    } catch {
+      // Refresh failed — fall through to normal error handling with the
+      // original 401 response so callers can react (e.g. redirect to login).
+    }
   }
 
   const text = await res.text()

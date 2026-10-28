@@ -1,5 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useMemo, useRef, useState } from 'react'
-import { authApi, getAccessToken, setAccessToken } from '@/lib/api.js'
+import { authApi, getAccessToken, setAccessToken, refreshAccessToken } from '@/lib/api.js'
 
 const AuthContext = createContext(null)
 
@@ -48,13 +48,11 @@ export function AuthProvider({ children }) {
     if (inFlightRefresh.current) return inFlightRefresh.current
     inFlightRefresh.current = (async () => {
       try {
-        const r = await authApi.refresh()
-        setAccessToken(r.data.accessToken)
-        setUser(r.data.user)
-        scheduleRefresh(r.data.accessToken)
+        const data = await refreshAccessToken()
+        setUser(data.user)
+        scheduleRefresh(data.accessToken)
         return true
       } catch {
-        setAccessToken(null)
         setUser(null)
         return false
       } finally {
