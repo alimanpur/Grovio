@@ -442,7 +442,7 @@ git push origin main
 | Cookies not sent (infinite redirect loop) | SameSite or Secure not configured | Ensure `COOKIE_SAMESITE=none` and `COOKIE_SECURE=true` in Render env |
 | 503 from `/api/health` | Backend can't connect to MongoDB | Check `MONGODB_URI` — ensure the password and database name are correct; check Atlas IP whitelist |
 | Refresh not working after cold start | First request times out before DB connects | Wait 10-15 seconds for Render to fully start, then retry |
-| Protected route returns 404 on refresh | SPA fallback not working | Verify `vercel.json` rewrites are in place and root directory is `frontend` |
+| Protected route returns 404 on refresh | SPA fallback not working | Ensure `vercel.json` is at the **repository root** (not just in `frontend/`). When using Root Directory = `frontend/`, Vercel reads config from the repo root. |
 | Registration hangs / fails | MongoDB URI points to wrong database | Ensure the URI ends with `grovio_prod` (not `grovio_test`) |
 
 ## 13. Rollback Guidance
