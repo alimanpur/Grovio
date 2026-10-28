@@ -437,7 +437,7 @@ git push origin main
 
 | Problem | Diagnosis | Fix |
 |---|---|---|
-| CORS error in browser console | Backend isn't allowing the Vercel origin | Check `CLIENT_ORIGIN` in Render env — must exactly match `https://your-grovio.vercel.app` |
+| CORS error / 403 from backend | Backend doesn't recognize the Vercel origin | Set `CLIENT_ORIGIN=https://grovio-ten.vercel.app` in Render env (must be exact, no trailing slash, no wildcard) |
 | 404 on /auth/* or /products in browser console | `VITE_API_URL` missing `/api` suffix | Set `VITE_API_URL=https://your-backend.onrender.com/api` in Vercel (include `/api`) |
 | Cookies not sent (infinite redirect loop) | SameSite or Secure not configured | Ensure `COOKIE_SAMESITE=none` and `COOKIE_SECURE=true` in Render env |
 | 503 from `/api/health` | Backend can't connect to MongoDB | Check `MONGODB_URI` — ensure the password and database name are correct; check Atlas IP whitelist |
