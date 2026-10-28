@@ -1,7 +1,7 @@
 services:
   - type: web
     name: grovio-api
-    runtime: node
+    runtime: 'node:20'
     rootDir: backend
     build:
       command: npm ci
