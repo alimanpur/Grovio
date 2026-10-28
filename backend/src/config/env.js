@@ -35,6 +35,10 @@ export const env = {
   mongoUri: process.env.MONGODB_URI || 'mongodb://localhost:27017/grovio',
   // Test suite runs against an isolated database on the same cluster.
   mongoTestUri: process.env.MONGODB_TEST_URI || process.env.MONGODB_URI,
+  // Presentation demo: a dedicated, isolated database used only by the seed
+  // script. Must be configured explicitly so demo fixtures can never land in
+  // production or any other environment.
+  mongoDemoUri: process.env.MONGODB_DEMO_URI || '',
 
   // Access tokens (JWT, held in memory by the SPA).
   jwtSecret: process.env.JWT_SECRET || '',
