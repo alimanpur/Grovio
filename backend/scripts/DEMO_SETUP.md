@@ -14,11 +14,11 @@ This guide explains how to set up and use the Grovio presentation demo account. 
 
 ### 1. Configure Environment
 
-Ensure `MONGODB_DEMO_URI` is set in your `.env` file. The seed script **will not run** without this variable — this is a safety measure to prevent demo data from landing in production:
+Ensure `MONGODB_URI` is set in your `.env` file. The seed script uses the same database as the backend server. This is a safety requirement.
 
 ```bash
 # In backend/.env
-MONGODB_DEMO_URI=mongodb+srv://your-user:your-password@cluster.mongodb.net/grovio_demo?retryWrites=true&w=majority
+MONGODB_URI=mongodb+srv://your-user:your-password@cluster.mongodb.net/grovio?retryWrites=true&w=majority
 ```
 
 ### 2. Run the Seed Script

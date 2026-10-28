@@ -29,8 +29,8 @@
  * - Demo owner credentials printed at the end
  *
  * USAGE:
- * 1. Ensure MONGODB_DEMO_URI environment variable is set to a dedicated MongoDB
- *    database (grovio_demo or similar). This is a safety requirement.
+ * 1. Ensure MONGODB_URI environment variable is set in your .env file.
+ *    The script uses the same database as the backend server.
  * 2. Run: npm run seed:demo (from backend directory)
  * 3. The script will:
  *    - Safely verify the environment
@@ -74,6 +74,7 @@ import { recordPayment } from '../src/services/paymentService.js'
 import returnService from '../src/services/returnService.js'
 
 import { toPaise, toRupees } from '../src/lib/money.js'
+import env from '../src/config/env.js'
 
 // --- Constants ---
 const DEMO_EMAIL = 'demo@grovio-demo.local'
@@ -95,31 +96,29 @@ async function verifyDemoEnvironment() {
     )
   }
 
-  // Check for demo database URI
-  if (!process.env.MONGODB_DEMO_URI) {
+  // Use the same database as the backend server
+  const mongoUri = env.mongoUri
+  if (!mongoUri) {
     throw new Error(
-      'ERROR: MONGODB_DEMO_URI environment variable is required.\n' +
-      'Please set this variable to point to a dedicated MongoDB database\n' +
-      '(e.g., mongodb://localhost:27017/grovio_demo or Atlas connection string)',
+      'ERROR: MONGODB_URI environment variable is required.\n' +
+      'Please set this variable in your .env file.',
     )
   }
 
   // Log connection info (without sensitive data)
-  const sanitizedUri = process.env.MONGODB_DEMO_URI.replace(/mongodb\+srv?:\/\/[^:]+:[^@]+@/i, 'mongodb+srv://***:***')
-  const dbName = process.env.MONGODB_DEMO_URI.includes('grovio_demo') ? ' (grovio_demo)' : ''
-  console.log('ðŸ“Š Database:', sanitizedUri + dbName)
+  const sanitizedUri = mongoUri.replace(/mongodb\+srv?:\/\/[^:]+:[^@]+@/i, 'mongodb+srv://***:***')
+  console.log('📊 Database:', sanitizedUri)
 
   // Connect to verify database connectivity
   try {
-    const conn = await mongoose.connect(process.env.MONGODB_DEMO_URI, {
-      dbName: 'grovio_demo',
+    await mongoose.connect(mongoUri, {
       serverSelectionTimeoutMS: 5000,
     })
-    console.log('âœ… Connected to demo database (', mongoose.connection.name, ')')
+    console.log('âœ… Connected to database (', mongoose.connection.name, ')')
     await mongoose.disconnect()
-    } catch (err) {
-      throw new Error(`âŒ Cannot connect to demo database: ${err.message}`)
-    }
+  } catch (err) {
+    throw new Error(`âŒ Cannot connect to database: ${err.message}`)
+  }
 
   console.log('âœ… Environment verification passed')
 }
@@ -1686,8 +1685,8 @@ async function runSeed() {
   await verifyDemoEnvironment()
 
   // Step 2: Connect to MongoDB
-  await mongoose.connect(process.env.MONGODB_DEMO_URI, { dbName: 'grovio_demo' })
-  console.log('✅ Connected to demo database:', mongoose.connection.name)
+  await mongoose.connect(env.mongoUri)
+  console.log('✅ Connected to database:', mongoose.connection.name)
 
   try {
     // Step 3: Clean up existing demo data
