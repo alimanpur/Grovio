@@ -1,0 +1,62 @@
+# Dependencies
+node_modules/
+
+# Root-level lockfiles (sub-projects manage their own)
+pnpm-lock.yaml
+yarn.lock
+bun.lock
+
+# Build outputs
+dist/
+build/
+.cache/
+
+# Environment files — never commit real secrets
+.env
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+.env.test
+.env.test.local
+
+# Coverage / test artifacts
+coverage/
+.nyc_output/
+playwright-report/
+test-results/
+playwright/.cache/
+.vitest/
+*.lcov
+
+# Logs
+*.log
+logs/
+npm-debug.log*
+yarn-debug.log*
+yarn-error.log*
+
+# OS artifacts
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+Thumbs.db
+desktop.ini
+
+# Stray artifacts
+Continue=Stop
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+*.code-workspace
+
+# Misc
+*.tgz
+package-lock.json.backup

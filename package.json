@@ -1,0 +1,19 @@
+{
+  "name": "grovio",
+  "version": "1.0.0",
+  "description": "Grovio — Retail OS for grocery stores (React frontend + Express/MongoDB backend)",
+  "private": true,
+  "scripts": {
+    "install": "echo \"See frontend/ and backend/ for per-service package managers\" && exit 0",
+    "dev:frontend": "npm --prefix frontend dev",
+    "dev:backend": "npm --prefix backend dev",
+    "build": "npm --prefix frontend build",
+    "test:backend": "npm --prefix backend test",
+    "test:frontend": "npm --prefix frontend test"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "keywords": ["grovio", "retail", "pos", "inventory", "billing"],
+  "license": "ISC"
+}

@@ -1,0 +1,41 @@
+# Dependencies
+node_modules/
+
+# Build outputs
+dist/
+.vercel/
+
+# Environment files — never commit real secrets
+.env
+.env.local
+.env.development
+.env.development.local
+.env.production
+.env.production.local
+
+# Test artifacts
+playwright-report/
+test-results/
+.vitest/
+*_test.spec.js
+*.spec.js.snap
+
+# Build/test scratch files
+_smoke.css
+package.json.backup
+
+# Logs
+*.log
+logs/
+
+# OS artifacts
+.DS_Store
+Thumbs.db
+desktop.ini
+
+# Editor / IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
