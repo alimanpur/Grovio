@@ -441,6 +441,8 @@ git push origin main
 | 404 on /auth/* or /products in browser console | `VITE_API_URL` missing `/api` suffix | Set `VITE_API_URL=https://your-backend.onrender.com/api` in Vercel (include `/api`) |
 | Cookies not sent (infinite redirect loop) | SameSite or Secure not configured | Ensure `COOKIE_SAMESITE=none` and `COOKIE_SECURE=true` in Render env |
 | 503 from `/api/health` | Backend can't connect to MongoDB | Check `MONGODB_URI` — ensure the password and database name are correct; check Atlas IP whitelist |
+| Backend crashes on startup | `MONGODB_URI` missing database name | Ensure the URI ends with `/grovio_prod` (e.g. `mongodb+srv://...cluster0...mongodb.net/grovio_prod?retryWrites=true&w=majority`) |
+| JWT_SECRET invalid | Quotes included in the value | Set `JWT_SECRET` without surrounding quotes in the Render dashboard |
 | Refresh not working after cold start | First request times out before DB connects | Wait 10-15 seconds for Render to fully start, then retry |
 | Protected route returns 404 on refresh | SPA fallback not working | Ensure `vercel.json` is at the **repository root** (not just in `frontend/`). When using Root Directory = `frontend/`, Vercel reads config from the repo root. |
 | Registration hangs / fails | MongoDB URI points to wrong database | Ensure the URI ends with `grovio_prod` (not `grovio_test`) |
