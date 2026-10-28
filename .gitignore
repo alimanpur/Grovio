@@ -50,6 +50,7 @@ desktop.ini
 Continue=Stop
 
 # Editor / IDE
+.kilo/
 .vscode/
 .idea/
 *.swp
