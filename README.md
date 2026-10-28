@@ -91,15 +91,15 @@ the backend directly via `VITE_API_URL`.
 | `SMTP_USER` | Backend | Yes | No | SMTP username |
 | `SMTP_PASS` | Backend | Yes | No | SMTP password |
 | `EMAIL_FROM` | Backend | No | No | Sender address for reset emails |
-| `VITE_API_URL` | Frontend | No | Prod | Backend API URL (e.g. `https://grovio-api.onrender.com`) |
+| `VITE_API_URL` | Frontend | No | Prod | Backend API URL, must include `/api` suffix (e.g. `https://grovio-api.onrender.com/api`) |
 
 ### Environment separation
 
 | Environment | Database | CLIENT_ORIGIN | EXPOSE_DEV_RESET_TOKEN | VITE_API_URL |
 |---|---|---|---|---|
 | Local dev | `grovio_test` / `grovio_test_business` | `http://localhost:5173` | `true` | `http://localhost:3001` (via proxy) |
-| Preview (Render/Git branch) | `grovio_test` / `grovio_test_business` | Branch frontend URL | `false` | Preview backend URL |
-| Production | `grovio_prod` | `https://<app>.vercel.app` | `false` | `https://grovio-api.onrender.com` |
+| Preview (Render/Git branch) | `grovio_test` / `grovio_test_business` | Branch frontend URL | `false` | Preview backend URL + `/api` |
+| Production | `grovio_prod` | `https://<app>.vercel.app` | `false` | `https://grovio-api.onrender.com/api` |
 
 > **Never** use `grovio_test`, `grovio_test_business`, or `grovio_dev` as the
 > production database name. Production data lives in a separate Atlas database.
